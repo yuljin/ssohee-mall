@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import {
   ArrowLeft,
   Check,
@@ -9,6 +10,10 @@ import {
   Truck,
 } from "lucide-react";
 import { demoOrders } from "@/lib/demo-store";
+import {
+  decodeDemoOrder,
+  getDemoOrderCookieName,
+} from "@/lib/demo-order-cookie";
 import { formatWon } from "@/modules/checkout/domain";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +24,13 @@ export default async function OrderPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const order = demoOrders.get(token);
+  const cookieStore = await cookies();
+  const cookieOrder = decodeDemoOrder(
+    cookieStore.get(getDemoOrderCookieName(token))?.value,
+  );
+  const order =
+    demoOrders.get(token) ??
+    (cookieOrder?.publicToken === token ? cookieOrder : undefined);
 
   if (!order) {
     notFound();

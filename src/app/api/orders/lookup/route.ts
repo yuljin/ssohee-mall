@@ -1,13 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { demoOrders } from "@/lib/demo-store";
+import {
+  decodeDemoOrder,
+  DEMO_ORDER_COOKIE_PREFIX,
+} from "@/lib/demo-order-cookie";
 
 const lookupSchema = z.object({
   orderNumber: z.string().trim().min(10).max(30),
   phoneLast4: z.string().regex(/^\d{4}$/),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const parsed = lookupSchema.safeParse(await request.json());
 
   if (!parsed.success) {
@@ -17,7 +21,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const order = Array.from(demoOrders.values()).find(
+  const cookieOrders = request.cookies
+    .getAll()
+    .filter((cookie) => cookie.name.startsWith(DEMO_ORDER_COOKIE_PREFIX))
+    .map((cookie) => decodeDemoOrder(cookie.value))
+    .filter((order) => order !== null);
+  const order = [...demoOrders.values(), ...cookieOrders].find(
     (candidate) =>
       candidate.orderNumber === parsed.data.orderNumber &&
       candidate.phoneLast4 === parsed.data.phoneLast4,

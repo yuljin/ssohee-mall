@@ -3,6 +3,10 @@ import { z } from "zod";
 import { calculatePrice, checkoutSelectionSchema } from "@/modules/checkout/domain";
 import { currentDrop } from "@/modules/drop/demo-data";
 import { demoOrders, demoSubscribers } from "@/lib/demo-store";
+import {
+  encodeDemoOrder,
+  getDemoOrderCookieName,
+} from "@/lib/demo-order-cookie";
 import { createOrderNumber, createPublicToken } from "@/lib/ids";
 
 const orderRequestSchema = z.object({
@@ -29,7 +33,7 @@ export async function POST(request: Request) {
     const publicToken = createPublicToken();
     const orderNumber = createOrderNumber();
 
-    demoOrders.set(publicToken, {
+    const order = {
       orderNumber,
       publicToken,
       status: "PAID",
@@ -47,13 +51,15 @@ export async function POST(request: Request) {
         .filter((addOn) => addOn.quantity > 0),
       totalAmount: summary.totalAmount,
       shippingStartsAt: currentDrop.shippingStartsAt,
-    });
+    } as const;
+
+    demoOrders.set(publicToken, order);
 
     if (payload.customer.marketingConsent) {
       demoSubscribers.add(payload.customer.buyerPhone);
     }
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         orderNumber,
         publicToken,
@@ -61,6 +67,18 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
+
+    response.cookies.set({
+      name: getDemoOrderCookieName(publicToken),
+      value: encodeDemoOrder(order),
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
