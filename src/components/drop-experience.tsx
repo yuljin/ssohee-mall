@@ -134,7 +134,7 @@ export function DropExperience({ drop }: { drop: Drop }) {
             <span>WEEKLY LOOK</span>
             <span>DROP {String(drop.sequence).padStart(2, "0")}</span>
           </div>
-          <ProductFlatlay />
+          <ProductFlatlay drop={drop} />
           <div className="visual-caption">
             <span>이번 주의 조합</span>
             <span>01 / 01</span>
@@ -436,7 +436,7 @@ export function DropExperience({ drop }: { drop: Drop }) {
             </div>
             <form onSubmit={submitOrder}>
               <div className="order-snapshot">
-                <ProductFlatlay />
+                <ProductFlatlay drop={drop} interactive={false} />
                 <div>
                   <strong>{drop.title}</strong>
                   <span>{sizeId} 사이즈 · {quantity}벌</span>

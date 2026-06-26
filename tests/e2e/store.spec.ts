@@ -27,3 +27,16 @@ test("archive exposes restock notification", async ({ page }) => {
   await page.getByRole("button", { name: "신청하기" }).click();
   await expect(page.getByText("신청되었습니다.")).toBeVisible();
 });
+
+test("customer can inspect outfit item tags", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "가디건 평면 상세 보기" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "크림 골지 가디건" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("세트 포함")).toBeVisible();
+  await expect(dialog.getByText("도톰한 골지 조직")).toBeVisible();
+
+  await dialog.getByRole("button", { name: "아이템 상세 닫기" }).click();
+  await expect(dialog).toBeHidden();
+});

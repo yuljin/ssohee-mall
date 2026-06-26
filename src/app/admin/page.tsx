@@ -16,6 +16,11 @@ export const dynamic = "force-dynamic";
 export default function AdminPage() {
   const orders = Array.from(demoOrders.values());
   const revenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const demoOrderQuantity = orders.reduce((sum, order) => sum + order.quantity, 0);
+  const confirmedQuantity = currentDrop.paidQuantity + demoOrderQuantity;
+  const nextReward = currentDrop.rewards.find(
+    (reward) => reward.threshold > confirmedQuantity,
+  );
 
   return (
     <main className="admin-page">
@@ -48,8 +53,8 @@ export default function AdminPage() {
           <article>
             <ShoppingBag size={20} />
             <span>결제 주문</span>
-            <strong>{currentDrop.paidQuantity + orders.length}</strong>
-            <small>데모 주문 +{orders.length}</small>
+            <strong>{confirmedQuantity}</strong>
+            <small>데모 주문 +{demoOrderQuantity}세트</small>
           </article>
           <article>
             <CircleDollarSign size={20} />
@@ -96,12 +101,16 @@ export default function AdminPage() {
               <strong>{formatWon(currentDrop.basePrice)}</strong>
             </div>
             <div>
-              <span>현재 리워드</span>
-              <strong>{currentDrop.rewards[0].title}</strong>
+              <span>기본 혜택</span>
+              <strong>{currentDrop.guaranteedBenefit.title}</strong>
             </div>
             <div>
               <span>다음 목표</span>
-              <strong>50벌 · {50 - currentDrop.paidQuantity}벌 남음</strong>
+              <strong>
+                {nextReward
+                  ? `${nextReward.threshold}세트 · ${nextReward.threshold - confirmedQuantity}세트 남음`
+                  : "모든 혜택 공개"}
+              </strong>
             </div>
           </div>
         </section>

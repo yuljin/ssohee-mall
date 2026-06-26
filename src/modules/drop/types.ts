@@ -31,6 +31,32 @@ export type RewardTier = {
   description: string;
 };
 
+export type GuaranteedBenefit = {
+  badge: string;
+  title: string;
+  description: string;
+};
+
+export type LookItem = {
+  id: string;
+  label: string;
+  title: string;
+  included: boolean;
+  tagPosition: {
+    x: number;
+    y: number;
+  };
+  flatImage?: string;
+  flatImageAlt?: string;
+  previewColor: string;
+  previewShape: "cardigan" | "shirt" | "pants";
+  description: string;
+  material: string;
+  fit: string;
+  care: string;
+  details: string[];
+};
+
 export type Drop = {
   id: string;
   slug: string;
@@ -49,11 +75,14 @@ export type Drop = {
   freeShippingThreshold: number;
   paidQuantity: number;
   targetQuantity: number;
+  publicRewardThreshold: number;
+  guaranteedBenefit: GuaranteedBenefit;
   model: {
     height: string;
     weight: string;
     wearing: string;
   };
+  lookItems: LookItem[];
   material: string;
   care: string;
   sizeOptions: ProductOption[];
